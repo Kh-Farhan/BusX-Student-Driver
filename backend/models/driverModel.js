@@ -1,0 +1,90 @@
+import mongoose from 'mongoose'
+
+const driverSchema=mongoose.Schema({
+    firstName:{
+        type:String,
+        required:true,
+    },
+    lastName:{
+        type:String,
+        required:true,
+    },
+    password:{
+        type:String,
+        required:true,
+        default:'12345',
+
+    },
+    cnic:{
+        type:Number,
+        required:true
+    },
+    age:{
+        type:Number,
+        required:true
+    },
+    dob:{
+      type:Date,
+      required:true,
+    },
+    contact:{
+        type:Number,
+        required:true
+    },
+    photo:{
+        type:Buffer,
+        required:true
+    },
+    city:{
+        type:String,
+        required:true
+    },
+    country:{
+        type:String,
+        required:true
+    },
+    address:{
+      type:String,
+      required:true
+    },
+    postalCode:{
+        type:Number,
+        required:true
+    },
+    photoType:{
+      type:String,
+      required:true
+    },
+    complaints:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'Complaint'
+        }
+    ],
+    fines:[
+        {
+            reason:{
+                type:String,
+            },
+            location:{
+                latitude:{
+                    type:Number
+                },
+                longitude:{
+                    type:Number
+                }
+            },
+            amount:{
+                type:Number
+            },
+        }
+    ],
+    license:{
+        type:Buffer,
+        required:true
+    }
+})
+
+const Driver =mongoose.model('Driver',driverSchema)
+
+export default Driver
