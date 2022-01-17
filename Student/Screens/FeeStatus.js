@@ -17,9 +17,9 @@ const view=(<View>
 <Image style={styles.image} source={require('../assets/LogoTransparent.png')}/>
  <Text style={{
 textAlign: 'center',
-color:status!=="payed"?"#FfC329":"#293038",
+color:status!=="Paid"?"#FfC329":"#293038",
 fontSize:30
-}}>{status==="payed"?"Fee Payed!":"Fee Not Payed:("}</Text>
+}}>{status==="Paid"?"Fee Paid!":"Fee UnPaid:("}</Text>
 </View>
 );
     return (

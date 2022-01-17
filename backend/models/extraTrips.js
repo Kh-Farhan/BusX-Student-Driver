@@ -20,5 +20,9 @@ const tripSchema =mongoose.Schema({
     Driver:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Driver'
+    },
+    institute:{
+        type:String,
+        required:true
     }
 })

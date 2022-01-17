@@ -1,5 +1,4 @@
 import React, { useState, useEffect,useContext } from 'react';
-import base64 from 'react-native-base64';
 import{StudentContext} from "../ContextApi";
 import {
   SafeAreaView,
@@ -15,17 +14,16 @@ import {
   DrawerItemList,
   DrawerItem,
 } from '@react-navigation/drawer';
-
-export const CustomDrawer = (props,) => {
+const Buffer = require('buffer/').Buffer
+export const CustomDrawer = (props) => {
   const student=useContext(StudentContext);
 const[name,setName]=useState(student.firstName+" "+student.lastName);
-const base64Image = base64.decode((student.photo));
   return (
     <SafeAreaView style={{flex: 1,backgroundColor:"white"}}>
       <View style={{backgroundColor:"#FfC329",paddingTop:40,paddingBottom:40,borderBottomRightRadius:30,borderBottomWidth:1,borderRightWidth:1}}>
       <TouchableOpacity style={{marginHorizontal:90,borderRadius:50}}>
       <Image
-        source={{uri:`data:${student.photoType};charset=utf8;base64,${base64Image}`}}
+        source={{uri:`data:${student.photoType};charset=utf8;base64,${Buffer.from(student.photo).toString('ascii')}`}}
         style={styles.image}
       />
       </TouchableOpacity>

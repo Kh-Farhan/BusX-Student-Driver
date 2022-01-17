@@ -8,6 +8,7 @@ import {DashboardScreen} from "./Screens/DashboardScreen";
 import {AppNavigation} from "./Screens/AppNavigation";
 import {fromLeft} from 'react-navigation-transitions';
 import {ForgetPassword} from '../Student/Screens/ForgetPassword.js';
+import {NotAllowed} from '../Student/Screens/NotAllowed.js';
 
 const Stack = createStackNavigator();
 
@@ -29,6 +30,10 @@ export default function App() {
         name="AppNav" 
         options={{headerShown: false}}
         component={AppNavigation} />
+        <Stack.Screen 
+        name="notAllowed" 
+        options={{headerShown: false}}
+        component={NotAllowed} />
         <Stack.Screen 
         name="forgetPassword" 
         options={{headerShown: false}}

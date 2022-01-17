@@ -25,6 +25,13 @@ const[loading,setLoading]=useState(false);
   .then(response => response.json())  
   .catch(error=> console.error("Error: ",error))
   .then(response=>{
+    if(response.error){
+      setError(null);
+        setCnic("");
+        setPassword("");
+        setLoading(false);
+      navigation.navigate("notAllowed");
+    }
       if(response.message){
         setLoading(false);
         setError(response.message);
@@ -72,7 +79,7 @@ const[loading,setLoading]=useState(false);
         />
         </View>
         {error==null?null:<Text style={styles.error} >{error}</Text>}
-        <Text style={styles.fPass} onPress={() => { navigation.navigate("forgetPassword")}}>Forgot your Password? </Text>
+        
       <TouchableOpacity type="submit" style={styles.SButton}>
       {loading?<View><ActivityIndicator  size="small" color="#FfC329"/></View>:<Text style={styles.ButtonText} onPress={handleSubmit}>Sign In</Text>}
       </TouchableOpacity>

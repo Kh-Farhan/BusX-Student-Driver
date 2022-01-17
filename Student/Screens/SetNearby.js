@@ -1,6 +1,5 @@
 import React, { useState, useEffect,useContext,useRef,createRef} from "react";
 import { StyleSheet, Text,Image, View,Button,TouchableOpacity,Switch,ActivityIndicator,Dimensions,Modal} from 'react-native';
-import{Google_API} from '@env';
 import{StudentContext} from "../ContextApi";
 import MapView,{Marker} from 'react-native-maps';
 import * as Location from "expo-location";
@@ -12,7 +11,7 @@ export function SetNearby({ navigation,route }) {
 const Sdata=useContext(StudentContext);
 const[data,setData]=useState(Sdata);
 const[initial,setInitial]=useState();
-const[marker,setMarker]=useState(data.nearbyAlert)
+const[marker,setMarker]=useState({latitude:33.72198782284096,longitude:73.08291045785127})
 const {width, height} = Dimensions.get('window')
 const SCREEN_HEIGHT = height
 const SCREEN_WIDTH = width
@@ -57,7 +56,8 @@ const SetNearby=()=>{
               Accept: 'application/json',
               'Content-Type': 'application/json'
             },
-            body:JSON.stringify({id:data._id,coordinates:marker})
+            body:JSON.stringify({id:data._id,coordinates:marker,institute:Sdata.institute
+            })
           })
           .then(response => response.json())  
           .catch(error=> console.error("ErrorHere: ",error))
@@ -249,7 +249,7 @@ const view=(<View >
      placeholder='Search'
     renderRightButton={()=><TouchableOpacity onPress={clearIn} style={styles.clearButton}><MaterialIcons name="delete" size={34} color="#FfC329" /></TouchableOpacity>}
      onPress={(data, details = null) => {
-      fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${data.place_id}&fields=geometry,name&key=${Google_API}`, {
+      fetch(`https://maps.googleapis.com/maps/api/place/details/json?place_id=${data.place_id}&fields=geometry,name&key=AIzaSyAJqGtli38VmOucpZPA1teyivLeYmojhMQ`, {
         method: 'GET'
       })
       .then(response => response.json())  
@@ -263,9 +263,9 @@ const view=(<View >
       });
      }}
      query={{
-       key:'${Google_API}',
+       key:'AIzaSyAJqGtli38VmOucpZPA1teyivLeYmojhMQ',
        language: 'en',
-       components: 'country:pk'
+       components: 'country:pk',
      }}
      styles={{
       container:{

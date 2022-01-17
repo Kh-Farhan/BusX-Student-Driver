@@ -28,10 +28,8 @@ export function SplashScreen({ navigation }) {
       justifyContent: "center",
     }, 
     container1: {
-      flex: 1,
-      flexDirection:"column",
       backgroundColor: "white",
-      height:500,
+      height:1000,
       alignItems: "center",
       justifyContent: "center",
       transform: [{ rotate: "45deg" }],

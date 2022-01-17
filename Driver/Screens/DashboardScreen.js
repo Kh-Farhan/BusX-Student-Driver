@@ -9,10 +9,69 @@ import { StyleSheet,ScrollView, Text,Image, View,Button,componentWillMount,Touch
 import { useFocusEffect } from '@react-navigation/native';
 import { FontAwesome5,Entypo,Ionicons,MaterialCommunityIcons,MaterialIcons ,AntDesign,FontAwesome ,Zocial  } from '@expo/vector-icons';
 import { DriverContext } from "../ContextApi";
+import SwipeButton from 'rn-swipe-button';
+import {localhost as LOCAL_HOST} from "../localhost";
+import * as Location from 'expo-location';
+import * as Permissions from 'expo-permissions';
+import * as TaskManager from 'expo-task-manager';
+const TASK_FETCH_LOCATION = 'BackgroundLocationFetch'; 
+let busID="";
+let nearBy={};
+import {socket} from "../socket.js";
 export function DashboardScreen({ navigation,route }) {
   const data=useContext(DriverContext);
     const [driver,setDriver]=useState(data.driver);
     const [bus,setBus]=useState(data.bus);
+    const [swiped,setSwiped]=useState(false);
+    const [int,setInt]=useState(null);
+    const [prevLocation,setPrevLocation]=useState();
+    busID=bus._id;
+
+  const handleSubmit=async()=>{
+    let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Permission to access location was denied');
+        return;
+      }
+    let backPerm = await Location.requestBackgroundPermissionsAsync();
+    console.log(backPerm);
+    setSwiped(true);
+    socket.on('connect_error', err => console.log(err));
+    socket.on('connect_failed', err => console.log(err));
+    socket.on('disconnect', err => console.log(err));
+    console.log("Pressed!");
+    let index=0;
+    {/*setPrevLocation(Location.watchPositionAsync({accuracy: Location.Accuracy.Balanced, timeInterval: 300, distanceInterval: 0 },(location)=>{
+      console.log(location.coords.latitude+","+location.coords.longitude);
+      const loc={bus:bus._id,lat:location.coords.latitude,lng:location.coords.longitude,status:"start"}
+      socket.emit("initial_data",loc);
+    }));*/}
+    Location.startLocationUpdatesAsync((TASK_FETCH_LOCATION), {
+      accuracy: Location.Accuracy.Highest,
+      distanceInterval: 5 , // minimum change (in meters) betweens updates
+      deferredUpdatesInterval: 300, // minimum interval (in milliseconds) between updates
+      // foregroundService is how you get the task to be updated as often as would be if the app was open
+      foregroundService: {
+        notificationTitle: 'Using your location',
+        notificationBody: 'To turn off, go back to the app and switch something off.',
+      },
+    });
+
+  
+  };
+  const handleCancel=()=>{
+    setSwiped(false);
+    const loc={bus:bus._id,status:"end"}
+    socket.emit("initial_data",loc);
+    console.log("Not Sharing !0");
+    console.log(prevLocation);
+    //prevLocation._W.remove();
+
+    Location.stopLocationUpdatesAsync(TASK_FETCH_LOCATION);
+    
+  };
+
+
     
   
     const Nav=(to)=>{
@@ -21,7 +80,6 @@ export function DashboardScreen({ navigation,route }) {
   
     
     const Dashboard= (<View>
-    <ScrollView>
     <View style={styles.topContainer}>
       <Text style={styles.welcomeM1}>Welcome to <Text style={{color:"#233D6E",fontWeight:"bold"}}>BUS<Text style={{color:"white"}} >X</Text></Text> </Text>
       <Text style={styles.welcomeM2}>{(driver.firstName+" "+driver.lastName).toUpperCase()} </Text>
@@ -68,15 +126,50 @@ export function DashboardScreen({ navigation,route }) {
           </View>
         </TouchableOpacity>
         <TouchableOpacity activeOpacity={0.9} onPress={Nav.bind(this,"Guest")}>
-          <View style={styles.cards}>
+          <View style={styles.cards} >
           <Zocial style={styles.icons} name="guest" size={27} color="#293038" />
           <Text style={styles.cardNames}>Register Guest</Text>
           </View>
         </TouchableOpacity>
         </View>
-      
+        {!swiped?
+        <SwipeButton
+            onSwipeSuccess={handleSubmit}
+            railBackgroundColor="#FfC329"
+            railStyles={{
+              backgroundColor: 'transparent',
+              borderColor: 'transparent',
+            }}
+            containerStyles={{borderWidth:0,elevation:10}}
+            thumbIconBorderColor="#696E74"
+            resetAfterSuccessAnimDelay={-15}
+            shouldResetAfterSuccess={true}
+            thumbIconBackgroundColor="#293038"
+            title="Slide to Share Location"
+            
+          />:
+          <SwipeButton
+          enableReverseSwipe
+          onSwipeSuccess={handleCancel}
+          railBackgroundColor="#293038"
+          resetAfterSuccessAnimDelay={-15}
+          shouldResetAfterSuccess={true}
+          railStyles={{
+            backgroundColor: 'transparent',
+            borderColor: 'transparent',
+          }}
+          thumbIconBorderColor="#696E74"
+          thumbIconBackgroundColor="#FfC329"
+          title="Slide to Cancel Sharing"
+          titleColor="#FfC329"
+        /> }
+       
+        
+        
+        
+        
+        
     </View>
-    </ScrollView>
     </View>);
     
     
@@ -86,15 +179,44 @@ export function DashboardScreen({ navigation,route }) {
       </View>
     );
   }
+
+  TaskManager.defineTask(TASK_FETCH_LOCATION, async ({ data: { locations }, error }) => {
+    if (error) {
+      console.error(error);
+      return;
+    }
+    console.log("HEre")
+    const [location] = locations;
+    console.log(busID+": "+location.coords.latitude+","+location.coords.longitude);
+      const loc={bus:busID,lat:location.coords.latitude,lng:location.coords.longitude,status:"start"}
+      socket.emit("initial_data",loc);
+  });
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor:"white",
       
     },
+    SButton:{
+      alignItems: "center",
+      marginTop:10,
+      backgroundColor:"#293038",
+      width:100,
+      height:50,
+      borderRadius:6,
+      paddingTop:"1.5%",
+    
+    },
+    ButtonText:{
+      color: "#FfC329",
+      fontWeight: "bold",
+      alignSelf: "center",
+      textTransform: "uppercase"
+    },
     topContainer: {
       backgroundColor:"#FfC329",
-      height:220,
+      height:"35%",
       borderBottomLeftRadius:30,
       borderColor:"#696E74",
       shadowColor: "#000",
@@ -105,6 +227,12 @@ export function DashboardScreen({ navigation,route }) {
       shadowOpacity: 0.43,
       shadowRadius: 9.51,
     },
+    titleText: {
+      fontSize: 17,
+      fontWeight: 'normal',
+      textAlign: 'center',
+      color: '#293038'
+  },
     topMidContainer: {
       alignSelf:"center",
       marginTop:10,
@@ -125,8 +253,9 @@ export function DashboardScreen({ navigation,route }) {
       elevation: 20,
     },
     bottomContainer: {
-      backgroundColor:"white",
       shadowRadius: 9.51,
+      height:"65%"
+      
 
     }, 
     cardContainer: {
@@ -151,7 +280,6 @@ export function DashboardScreen({ navigation,route }) {
       borderWidth:1.5,
       backgroundColor:"white",
       borderColor:"#FfC329",
-      padding:10,
       width:120,
       height:100,
       borderRadius:20,

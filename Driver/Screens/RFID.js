@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect,useContext,} from "react";
 import { StyleSheet, Text,Image, View,Button,TouchableOpacity,Switch,ActivityIndicator,Dimensions,Modal} from 'react-native';
 import{DriverContext} from "../ContextApi";
@@ -7,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 const {width, height} = Dimensions.get('window');
 import {localhost as LOCAL_HOST} from "../localhost";
 import { TextInput } from "react-native-gesture-handler";
-
+import io from "socket.io-client";
 export function RFID({ navigation,route }) {
 
 const Sdata=useContext(DriverContext);
@@ -15,7 +16,11 @@ const[data,setData]=useState(Sdata);
 const[modalVisible,setModalVisible]=useState(false);
 const[modalText,setModalText]=useState("");
 const[rfid,setRfid]=useState(null);
-
+const socket = io(`http://${LOCAL_HOST}:4000/`,{transports: ['websocket']});
+  socket.on('connect_error', err => console.log(err));
+  socket.on('connect_failed', err => console.log(err));
+  socket.on('disconnect', err => console.log(err));
+  
 useEffect(()=>{
     navigation.setOptions({ headerRight:()=>( 
         <TouchableOpacity onPress={()=>navigation.goBack()}  >        
@@ -31,7 +36,26 @@ useEffect(()=>{
 // }
 
 // },[rfid])
-
+let interval=null;
+const handleSubmit=(rfid)=>{
+  console.log("Triggered!!")
+  fetch(`http://${LOCAL_HOST}:5000/driver/scanRfid`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({rfid:rfid})
+  })
+  .then(response => response.json())  
+  .catch(error=> console.error("Error: ",error))
+  .then(response=>{ 
+    setModalText(response.Success);
+    setModalVisible(true);
+  })
+  
+ 
+};
 
 const view=(<View>
     <Modal
@@ -56,13 +80,14 @@ const view=(<View>
           placeholder="RFID"
           placeholderTextColor="#293038" 
           value={rfid}
-          onChangeText={(text)=>{setRfid(text)
-            setError(null)}}
+          onChangeText={(text)=>{
+            handleSubmit(text);
+           }}
         />
         </View>
       <Image  style={{marginTop:"10%",width:350,height:350,alignSelf:"center"}} source={require('../assets/scan.gif')} />
       <Text style={styles.RFIDtext}>Scan Now!</Text>
-    </View>)
+        </View>)
     return (
         <View style={styles.container}>
             {view}

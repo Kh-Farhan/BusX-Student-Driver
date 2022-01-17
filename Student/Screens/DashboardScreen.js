@@ -9,18 +9,62 @@ import { StyleSheet,ScrollView, Text,Image, View,Button,componentWillMount,Touch
 import { useFocusEffect } from '@react-navigation/native';
 import {StudentContext} from '../ContextApi';
 import { FontAwesome5,Entypo,Ionicons,MaterialCommunityIcons,MaterialIcons ,AntDesign    } from '@expo/vector-icons';
+import { Dimensions } from 'react-native';
+import {socket} from "../socket.js";
+import * as Notifications from 'expo-notifications';
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
 export function DashboardScreen({ navigation,route }) {
   const data=useContext(StudentContext);
     const [student,setStudent]=useState(data);
     
   
+
+    useEffect(()=>{
+      registerForPushNotificationsAsync();
+    },[])
+    const registerForPushNotificationsAsync=async()=> {
+      let token;
+        const status = await Notifications.getPermissionsAsync();
+        let finalStatus =status;
+        console.log(finalStatus);
+        if (status.status !== 'granted') {
+          const status = await Notifications.requestPermissionsAsync();
+          console.log("AfterAsking!"+JSON.stringify(status))
+          finalStatus = status;
+        }
+        if (finalStatus.status !== 'granted') {
+          alert('Failed to get push token for push notification!');
+          return;
+        }
+        token = (await Notifications.getExpoPushTokenAsync()).data;
+        const obj={
+          Sid:student._id,
+          Ntoken:token
+        }
+        socket.emit("AddNotificationToken",obj);
+        
+        console.log(token);
+    }
+
+
+
+
+
+
+
     const Nav=(to)=>{
-      navigation.navigate(to);
+      if(to==="Route" && student.route===null){
+        navigation.navigate(to,{data:route.params.rout});
+      }else{
+        navigation.navigate(to);
+      }
+      
     };
   
     
     const Dashboard= (<View>
-    <ScrollView>
     <View style={styles.topContainer}>
       <Text style={styles.welcomeM1}>Welcome to <Text style={{color:"#233D6E",fontWeight:"bold"}}>BUS<Text style={{color:"white"}} >X</Text></Text> </Text>
       <Text style={styles.welcomeM2}>{(student.firstName+" "+student.lastName).toUpperCase()} </Text>
@@ -68,17 +112,8 @@ export function DashboardScreen({ navigation,route }) {
           </View>
         </TouchableOpacity>
       </View>
-      <View style={styles.cardContainerL}>
-      <TouchableOpacity activeOpacity={0.9} onPress={Nav.bind(this,"ScanQR")}>
-          <View style={styles.cards}>
-          <AntDesign style={styles.icons} name="qrcode" size={28} color="#293038" />
-          <Text style={styles.cardNames}>Scan QR</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
       
     </View>
-    </ScrollView>
     </View>);
     
     
@@ -90,13 +125,11 @@ export function DashboardScreen({ navigation,route }) {
   }
   const styles = StyleSheet.create({
     container: {
-      flex: 1,
-      backgroundColor:"white",
-      
+      backgroundColor:"white"
     },
     topContainer: {
+      height:windowHeight/5,
       backgroundColor:"#FfC329",
-      height:"22%",
       borderBottomLeftRadius:30,
       borderBottomRightRadius:30,
       borderColor:"#696E74",
@@ -109,34 +142,36 @@ export function DashboardScreen({ navigation,route }) {
       shadowRadius: 9.51,
     },
     bottomContainer: {
+      height:windowHeight-(windowHeight/5),
       backgroundColor:"white",
       shadowRadius: 9.51,
+
 
     }, 
     cardContainer: {
       flexDirection:"row",
       justifyContent:"space-between",
-      padding:10,
-      paddingHorizontal:40,
-      marginBottom:50,
-      marginTop:-50,
+      padding:"2.5%",
+      paddingHorizontal:"11%",
+      marginBottom:"14%",
+      marginTop:"-13%",
       
       
     },
     cardContainerL: {
       flexDirection:"row",
       justifyContent:"center",
-      padding:10,
-      paddingHorizontal:50,
-      marginBottom:100,
-      marginTop:-50
+      padding:"3%",
+      paddingHorizontal:"11%",
+      marginBottom:"28%",
+      marginTop:"-13%"
     },
     cards:{
       borderWidth:1,
       backgroundColor:"white",
       borderColor:"#FfC329",
-      padding:10,
-      width:120,
+      padding:"3%",
+      width:windowWidth/3,
       height:100,
       borderRadius:20,
       elevation:6,

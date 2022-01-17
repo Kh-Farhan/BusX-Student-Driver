@@ -16,9 +16,12 @@ const fuelSchema= mongoose.Schema({
                 required:true
             }
         }
-    ]
+    ],
+    institute:{
+        type:String,
+        required:true
+    }
 })
-
 const Fuel= mongoose.model('Fuel',fuelSchema)
 
 export default Fuel

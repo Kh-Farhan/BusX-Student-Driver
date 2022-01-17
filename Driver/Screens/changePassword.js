@@ -12,19 +12,22 @@ const [repassword,setrePassword]=useState("");
 const[error,setError]=useState(null);
 const[loading,setLoading]=useState(false);
 const data=useContext(DriverContext);
+const [driver,setDriver]=useState(data.driver);
+const [bus,setBus]=useState(data.bus);
 const [modalVisible, setModalVisible] = useState(false);
 const [modalText, setModalText] = useState();
 
   const handleSubmit=()=>{
     setLoading(true);
-    fetch(`http://${LOCAL_HOST}:5000/student/changePass`, {
+    console.log(LOCAL_HOST);
+    fetch(`http://${LOCAL_HOST}:5000/driver/changePass`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json'
       
     },
-    body: JSON.stringify({id:data._id,oldPass:oldPass,password:password,repassword:repassword})
+    body: JSON.stringify({id:driver._id,oldPass:oldPass,password:password,repassword:repassword})
   })
   .then(response => response.json())  
   .catch(error=> console.error("Error: ",error))

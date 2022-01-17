@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View,Button } from 'react-native';
+import { StyleSheet,Text, View,Button } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer} from '@react-navigation/native';
 import {SplashScreen} from "./Screens/SplashScreen";
@@ -7,7 +7,7 @@ import {LoginScreen} from "./Screens/LoginScreen";
 import {DashboardScreen} from "./Screens/DashboardScreen";
 import {AppNavigation} from "./Screens/AppNavigation.js";
 import {ForgetPassword} from '../Driver/Screens/ForgetPassword.js';
-
+import {NotAllowed} from '../Driver/Screens/NotAllowed.js';
 const Stack = createStackNavigator();
 
 
@@ -28,6 +28,10 @@ export default function App() {
         name="AppNav" 
         options={{headerShown: false}}
         component={AppNavigation} />
+        <Stack.Screen 
+        name="notAllowed" 
+        options={{headerShown: false}}
+        component={NotAllowed} />
         <Stack.Screen 
         name="forgetPassword" 
         options={{headerShown: false}}

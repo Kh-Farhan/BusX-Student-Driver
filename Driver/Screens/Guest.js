@@ -16,7 +16,6 @@ const[destination,setDestination]=useState("");
 const[contact,setContact]=useState("");
 const [error,setError]=useState("");
 const[loading,setLoading]=useState(false);
-
 const[modalVisible,setModalVisible]=useState(false);
 const[modalText,setModalText]=useState("");
 useEffect(()=>{
@@ -35,7 +34,7 @@ const handleSubmit=()=>{
     Accept: 'application/json',
     'Content-Type': 'application/json'
   },
-  body: JSON.stringify({name:name,regNo:regNo,contact:contact,destination:destination})
+  body: JSON.stringify({name:name,regNo:regNo,contact:contact,destination:destination,institute:data.institute})
 })
 .then(response => response.json())  
 .catch(error=> console.error("Error: ",error))

@@ -24,7 +24,7 @@ const driverSchema=mongoose.Schema({
         required:true
     },
     dob:{
-      type:Date,
+      type:String,
       required:true,
     },
     contact:{
@@ -82,7 +82,32 @@ const driverSchema=mongoose.Schema({
     license:{
         type:Buffer,
         required:true
+    },
+
+    currentLocation:{
+        lat:{
+            type:Number,
+        },
+        lng:{
+            type:Number,
+        }
+    },
+    institute:{
+        type:String,
+        required:true
     }
+
+})
+
+driverSchema.index({ 'institute': 1, 'cnic': 1}, { unique: true });
+
+
+driverSchema.pre('save',async function (next){
+    const user=this;
+    if(user.isModified('password')){
+        user.password= await bcrypt.hash(user.password, 8)
+    }
+    next()
 })
 
 const Driver =mongoose.model('Driver',driverSchema)

@@ -1,8 +1,9 @@
 import React, { useState, useEffect,useContext} from "react";
 import { StyleSheet, Text,Image, View,Button,FlatList,TouchableOpacity,Modal,Pressable,ActivityIndicator} from 'react-native';
 import{StudentContext} from "../ContextApi";
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Ionicons,Octicons} from '@expo/vector-icons';
 import {localhost as LOCAL_HOST} from "../localhost";
+import { FadeInFlatList } from '@ja-ka/react-native-fade-in-flatlist';
 
 import Detail from "react-native-modal";
 export function Route({ navigation,route }) {
@@ -13,11 +14,15 @@ const[routes,setRoutes]=useState({});
 const [modalVisible, setModalVisible] = useState(false);
 const [modalText, setModalText] = useState();
 const [detailVisible, setDetailVisible] = useState(false);
-const [detailText, setDetailText] = useState([0,1]);
+const [detailText, setDetailText] = useState([]);
 const [loader, setLoader] = useState(false);
+const [oldRoute,setOldRoute]=useState(Sdata.route.routeId);
 useEffect(()=>{
+  if(route.params){
+    setOldRoute(route.params.data);
+  }
     const getData=async ()=>{
-        await fetch(`http://${LOCAL_HOST}:5000/student/getData/${Sdata._id}`, {
+        await fetch(`http://${LOCAL_HOST}:5000/student/getData/?user=${Sdata._id}&institute=${Sdata.institute}`, {
             method: 'GET',
             headers: {
               Accept: 'application/json',
@@ -44,7 +49,7 @@ useEffect(()=>{
     };
     getData();
      
-    fetch(`http://${LOCAL_HOST}:5000/student/viewRoute`, {
+    fetch(`http://${LOCAL_HOST}:5000/student/viewRoute/${Sdata.institute}`, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -84,13 +89,14 @@ const onChange=async(obj)=>{
   .then(response=>{
       if(response.Errormessage){
         setLoader(false);
-        setModalText(response.Successmessage);
+        setModalText(response.Errormessage);
         setModalVisible(true);
     }
       if(response.Successmessage){
         setLoader(false);
         setModalText(response.Successmessage);
         setModalVisible(true);
+        console.log(obj);
         setCurrentRoute(obj.name);
       }
       
@@ -121,10 +127,21 @@ const onChange=async(obj)=>{
       swipeDirection={["left","right","up","down"]}
       >
       <View style={styles.details}>
-          <Text style={styles.detailsH} >Start</Text>
-          <Text style={styles.detailsT} >{detailText[0]}</Text>
-          <Text style={styles.detailsH} >Destination</Text>
-          <Text style={styles.detailsT} >{detailText[1]}</Text>
+      <FadeInFlatList
+          initialDelay={0}
+          durationPerItem={500} 
+          style={{borderBottomLeftRadius:30,borderBottomRightRadius:30}}
+          keyExtractor={(item, index) => `${item} ${index}`}
+          data={detailText}
+          renderItem={({ item,index }) => (
+            <View style={styles.listContainer}>
+            <Octicons name="primitive-dot" size={24} color="#FfC329" />
+          <TouchableOpacity>
+          <Text style={[styles.detailsT,{marginLeft:10}]} >{`${item.split(',')[0]},${item.split(',')[1]}`}</Text>
+          </TouchableOpacity>
+          </View>
+        )}
+      />
           <TouchableOpacity  style={styles.SDButton} onPress={()=>{
             setDetailVisible(false);}}>
            <Text style={styles.ButtonText} >OK</Text>
@@ -141,7 +158,7 @@ const onChange=async(obj)=>{
             <View style={styles.routeContainer}>
           <TouchableOpacity 
          onPress={()=>{
-            onChange({route:item._id,name:item.name,user:Sdata._id,current:data.bus,isRoute:Sdata.route});
+            onChange({route:item._id,name:item.name,user:Sdata._id,current:data.bus,isRoute:oldRoute,institute:Sdata.institute});
          }} >
           <Text style={styles.routT}>Route {item.name}</Text>
           </TouchableOpacity>
@@ -276,6 +293,11 @@ const onChange=async(obj)=>{
           height:"93%",
           borderBottomLeftRadius:30,
 
+      },
+      listContainer:{
+        flexDirection:"row",
+        alignItems: "center",
+        width:"92%"
       }
     
   });

@@ -7,6 +7,7 @@ import { NavigationContainer,DrawerActions,NavigationActions } from '@react-navi
 import{StudentContext} from "../ContextApi";
 import changePassword from './changePassword'
 import {localhost as LOCAL_HOST} from "../localhost";
+const Buffer = require('buffer/').Buffer
 const Stack = createStackNavigator();
 //Navigator COmponent
 export function AccountSetting({ navigation,route }) {
@@ -16,7 +17,6 @@ const [subject,setSubject]=useState("");
 const [desc,setDesc]=useState("");
 const [modalVisible, setModalVisible] = useState(false);
 const [modalText, setModalText] = useState();
-const base64Image = base64.decode((student.photo));
 
 
     return (
@@ -25,7 +25,7 @@ const base64Image = base64.decode((student.photo));
         headerTitleAlign:"center",
         headerLeft:()=>( 
           <TouchableOpacity style={{borderWidth:1,borderColor:"#696E74",marginLeft:10,borderRadius:30,elevation:6,marginTop:-5}}onPress={() => navigation.openDrawer()}  >
-          <Image style={{width: 100, height: 50}} source={{uri:`data:${student.photoType};charset=utf8;base64,${base64Image}`}} 
+          <Image style={{width: 100, height: 50}} source={{uri:`data:${student.photoType};charset=utf8;base64,${Buffer.from(student.photo).toString('ascii')}`}} 
           style={{height:50,width:50,borderWidth:1,borderRadius:30}}/>
         
       </TouchableOpacity>)

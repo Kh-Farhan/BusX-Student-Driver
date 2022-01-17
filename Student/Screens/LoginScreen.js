@@ -12,6 +12,7 @@ const[error,setError]=useState(null);
 const[loading,setLoading]=useState(false);
 
 
+
   const handleSubmit=()=>{
     setLoading(true);
     console.log("ip is : "+LOCAL_HOST)
@@ -26,6 +27,13 @@ const[loading,setLoading]=useState(false);
   .then(response => response.json())  
   .catch(error=> console.error("Error: ",error))
   .then(response=>{
+      if(response.error){
+        setError(null);
+        setEmail("");
+        setPassword("");
+        setLoading(false);
+        navigation.navigate("notAllowed");
+      }
       if(response.message){
         setLoading(false);
         setError(response.message);
@@ -68,8 +76,8 @@ const[loading,setLoading]=useState(false);
           setError(null)}}
         />
         </View>
-        {error==null?null:<Text style={styles.error} >{error}</Text>}
         <Text style={styles.fPass} onPress={() => { navigation.navigate("forgetPassword")}}>Forgot your Password? </Text>
+        {error==null?null:<Text style={styles.error} >{error}</Text>}
       <TouchableOpacity type="submit" style={styles.SButton}>
       {loading?<View><ActivityIndicator  size="small" color="#FfC329"/></View>:<Text style={styles.ButtonText} onPress={handleSubmit}>Sign In</Text>}
       </TouchableOpacity>

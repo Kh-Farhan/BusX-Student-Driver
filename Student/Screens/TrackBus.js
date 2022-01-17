@@ -1,6 +1,5 @@
 import React, { useState, useEffect,useContext,} from "react";
-import { StyleSheet, Text,Image, View,Button,TouchableOpacity,Switch,ActivityIndicator,Dimensions,Modal} from 'react-native';
-import {Google_API} from '@env';
+import { StyleSheet, Text,Image, View,Button,TouchableOpacity,Switch,ActivityIndicator,Dimensions,Modal,Alert} from 'react-native';
 import{StudentContext} from "../ContextApi";
 import MapView,{Marker,Polyline} from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
@@ -8,13 +7,13 @@ import * as Location from "expo-location";
 import { Ionicons } from '@expo/vector-icons';
 import {localhost as LOCAL_HOST} from "../localhost";
 const {width, height} = Dimensions.get('window');
-
-
+import {socket} from "../socket.js";
 export function TrackBus({ navigation }) {
 const Sdata=useContext(StudentContext);
 const [route,setRoute]=useState(null);
 const[data,setData]=useState(Sdata);
 const[stops,setStops]=useState();
+const [start,setStart]=useState(false);
 const[initial,setInitial]=useState();
 const[marker,setMarker]=useState({latitude:33.71398971857024, longitude:73.08249838549538})
 const {width, height} = Dimensions.get('window')
@@ -26,13 +25,22 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 const [modalVisible, setModalVisible] = useState(false);
 const [modalText, setModalText] = useState();
 const [coordinates,setCoordinates]=useState([]);
+const [m,setM]=useState(undefined);
 useEffect(()=>{
+  let timer=0;
+  console.log("*********************USE EFFECT TRIGGERED************************");
+  socket.on('connect_error', err => console.log(err));
+socket.on('connect_failed', err => console.log(err));
+socket.on('disconnect', err => console.log(err));
     navigation.setOptions({ headerRight:()=>( 
-        <TouchableOpacity onPress={()=>navigation.goBack()}  >        
+        <TouchableOpacity onPress={()=>{
+          socket.emit("close");
+          navigation.goBack();
+          }}  >        
     <Ionicons style={{marginRight:10,marginTop:5}}name="arrow-back" size={28} color="black" />
     </TouchableOpacity>) });
     
-    fetch(`http://${LOCAL_HOST}:5000/student/getData/${Sdata._id}`, {
+    fetch(`http://${LOCAL_HOST}:5000/student/getData/?user=${Sdata._id}&institute=${Sdata.institute}`, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -43,7 +51,6 @@ useEffect(()=>{
   .catch(error=> console.error("Error: ",error))
   .then(response=>{
       if(response.data){
-        
         fetch(`http://${LOCAL_HOST}:5000/student/get1Route/${response.data.route.routeId}`, {
           method: 'GET',
           headers: {
@@ -55,32 +62,71 @@ useEffect(()=>{
         .catch(error=> console.error("Error: ",error))
         .then(response=>{
             if(response.route){
-              
-              setRoute(response.route);
-              setInitial({latitude:response.route.stops[0].lat , longitude:response.route.stops[0].lng,latitudeDelta:LATITUDE_DELTA,longitudeDelta:LONGITUDE_DELTA});
-              let coord=[];
-              response.route.stops.forEach((element,index) => {
-                coord=[...coord,{latitude:element.lat,longitude:element.lng}];
-              });
-              setCoordinates(coord);
+            
+                setRoute(response.route);
+                setInitial({latitude:response.route.stops[0].lat , longitude:response.route.stops[0].lng,latitudeDelta:LATITUDE_DELTA,longitudeDelta:LONGITUDE_DELTA});
+                let coord=[];
+                response.route.stops.forEach((element,index) => {
+                  coord=[...coord,{latitude:element.lat,longitude:element.lng}];
+                });
+                setCoordinates(coord);
+                console.log("Sending Location Request!");
+                handleLocation();
             }
             
         });
       }
       
   });
-    
-    
-  
-    
+  socket.on("Loc",data=>{
+    console.log("data fron Socket : "+data);
+    if(data===null){
+      console.log("Opened!!")
+      setModalVisible(true);
+      setModalText("Not Sharing Live Location At the Moment!"); 
+    }
+    else{
+      //*****************************Here I am  */
+        const obj={latitude:data.lat,longitude:data.lng}
+        setM(obj);
+        console.log("**********test**********");
+        console.log("route:"+ route);
+        console.log("coordinates:"+ coordinates);
+        console.log("inititla:"+ initial);
+        console.log("STarting"+JSON.stringify(data));
+        setStart(true);
+
+        
+
+        
+      }
+    });
+
+  return()=>{
+    socket.off("Loc");
+    socket.emit("close");
+  }
 },[]);
+
+const handleLocation=()=>{
+  console.log("Thiss also called");
+  
+  socket.emit("getBus",Sdata._id);
+  socket.once("busId",data=>{
+    console.log("Recieving: "+JSON.stringify(data))
+    const data1={bus:data};
+    socket.emit("get_loc",data1);
+  })
+  
+}
+
 
 const view=(<View>
     <MapView style={styles.map}
     initialRegion={initial}
     >
     <Marker
-        coordinate={coordinates.length!==0?coordinates[0]:null}
+        coordinate={coordinates.length!==0&&m!==undefined?m:{latitude:33,longitude:44}}
         onPress={e=>setStops(e.nativeEvent.coordinate)}
         resizeMethod="contain"
         >
@@ -92,17 +138,37 @@ const view=(<View>
     <MapViewDirections
       origin={coordinates[0]}
       destination={coordinates[coordinates.length-1]}
-      apikey={'${Google_API}'}
+      apikey={'AIzaSyAJqGtli38VmOucpZPA1teyivLeYmojhMQ'}
       strokeColor="#FfC329" 
       strokeWidth={7}
       waypoints={coordinates}
     />
-    
     </MapView>
-    </View>)
+    </View>);
+    
     return (
         <View style={styles.container}>
-            {route!==null &&initial!=undefined &&coordinates.length!==0 && coordinates.length===route.stops.length?view:<View style={styles.ActivityIndicator}><ActivityIndicator  size="large" color="black"/></View>}
+        <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+      >
+        <View>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>{modalText}</Text>
+            <TouchableOpacity  style={styles.SButton} onPress={()=>{
+            setModalVisible(false);
+            console.log("Not Yet Sharing");
+            setStart(false);
+            socket.emit("close");
+            navigation.navigate("Dashboard");  
+            }}>
+        <Text style={styles.ButtonText} >OK</Text>
+        </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+            {route!==null &&initial!=undefined &&coordinates.length!==0 && coordinates.length===route.stops.length&&start!==false?view:<View style={styles.ActivityIndicator}><ActivityIndicator  size="small" color="black"/></View>}
             </View>
       
     );
@@ -128,7 +194,7 @@ const view=(<View>
     modalView: {
         width:"90%",
         alignSelf:"center",
-        marginTop: "100%",
+        marginTop: "80%",
         backgroundColor: "white",
         borderRadius: 20,
         borderWidth:1,

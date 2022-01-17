@@ -8,7 +8,11 @@ const feedbackSchema=mongoose.Schema({
     description:{
         type:String,
         required: true
-    }
+    },
+    institute:{
+        type:String,
+        required:true
+    },
 })
 
 const Feedback = mongoose.model('Feedback',feedbackSchema)

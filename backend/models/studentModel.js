@@ -47,8 +47,8 @@ const studentSchema= mongoose.Schema({
         type:Number,
         required:true
     },
-    image:{
-       type:String,
+    institute:{
+        type:String,
         required:true
     },
     registration:{
@@ -77,9 +77,31 @@ const studentSchema= mongoose.Schema({
     feeStatus:{
         type:String,
         default: 'payed' 
-    }
+    },
+    notificationToken:{
+        type:String,
+        default: "" 
+    },
+    photo:{
+        type:Buffer,
+         required:true,
+     },
+     photoType:{
+       type:String,
+       required:true
+     },
 
 },{timeStamps:true})
+
+studentSchema.index({ 'institute': 1, 'cnic': 1}, { unique: true });
+
+studentSchema.pre('save',async function (next){
+    const user=this;
+    if(user.isModified('password')){
+        user.password= await bcrypt.hash(user.password, 8)
+    }
+    next()
+})
 
 const Student=mongoose.model('Student', studentSchema)
 

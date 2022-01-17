@@ -13,6 +13,9 @@ const guestSchema=mongoose.Schema({
         type:Number,
         required:true
     },
+    institute:{
+        type:String,
+    },
     destination:{
         type:String,
         required: true

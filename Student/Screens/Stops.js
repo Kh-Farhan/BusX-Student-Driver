@@ -6,7 +6,7 @@ import MapViewDirections from 'react-native-maps-directions';
 import * as Location from "expo-location";
 import { Ionicons } from '@expo/vector-icons';
 import {localhost as LOCAL_HOST} from "../localhost";
-import {Google_API} from '@env'
+
 const {width, height} = Dimensions.get('window');
 
 
@@ -26,13 +26,14 @@ const [modalVisible, setModalVisible] = useState(false);
 const [modalText, setModalText] = useState();
 const [coordinates,setCoordinates]=useState([]);
 const [route,setRoute]=useState(null);
+const [university,setUniversity]=useState({latitude:33.6481673859539,longitude: 73.15791260744702})
 useEffect(()=>{
     navigation.setOptions({ headerRight:()=>( 
         <TouchableOpacity onPress={()=>navigation.goBack()}  >        
     <Ionicons style={{marginRight:10,marginTop:5}}name="arrow-back" size={28} color="black" />
     </TouchableOpacity>) });
    
-    fetch(`http://${LOCAL_HOST}:5000/student/getData/${Sdata._id}`, {
+    fetch(`http://${LOCAL_HOST}:5000/student/getData/?user=${Sdata._id}&institute=${Sdata.institute}`, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -62,6 +63,7 @@ useEffect(()=>{
               response.route.stops.forEach((element,index) => {
                 coord=[...coord,{latitude:element.lat,longitude:element.lng}];
               });
+              coord=[university,...coord];
               setCoordinates(coord);
             }
             
@@ -135,9 +137,10 @@ const view=(<View>
     <MapViewDirections
       origin={coordinates[0]}
       destination={coordinates[coordinates.length-1]}
-      apikey={'${Google_API}'}
+      apikey={'AIzaSyAJqGtli38VmOucpZPA1teyivLeYmojhMQ'}
       strokeColor="#FfC329" 
       strokeWidth={7}
+      optimizeWaypoints={true}
       waypoints={coordinates}
     />
     

@@ -21,7 +21,7 @@ const [modalText, setModalText] = useState();
     </TouchableOpacity>) });
 
     (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      const { status } = 'granted'
       setHasPermission(status === 'granted');
     })();
   }, []);
@@ -40,7 +40,7 @@ const [modalText, setModalText] = useState();
   </View>
   );
   }
-  if (hasPermission === false) {
+  if (hasPermission) {
     return 
     (
       <View>

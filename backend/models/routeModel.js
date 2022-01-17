@@ -2,28 +2,40 @@ import mongoose from 'mongoose'
 
 const routeSchema=mongoose.Schema({
     name:{
-        type:String,
-        required:true
-    },
-    number:{
         type:Number,
-        required:true
+        required:true,
     },
     stops:[
         {
-            latitude:{
-                type:String
+            lat:{
+                type:Number,
+                required:true
             },
-            longitude:{
-                type:String
+            lng:{
+                type:Number,
+                required:true
             }
         }
     ],
-    bus:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Bus',
+    distance:{
+        type:Number,
+        required:true
+    },
+    traveltime:{
+        type:Number,
+        required:true
+    },
+    addresses:[
+        {
+                type: String,
+                required: true
+        }
+    ],
+    institute:{
+        type:String,
+        required:true
     }
 })
-
+routeSchema.index({ 'institute': 1, 'name': 1}, { unique: true });
 const Route =mongoose.model('Route', routeSchema)
 export default Route;

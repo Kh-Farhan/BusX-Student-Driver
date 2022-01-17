@@ -44,7 +44,7 @@ const view=(
           initialDelay={0}
           durationPerItem={500} 
           style={{backgroundColor:"white",borderBottomLeftRadius:30,borderBottomRightRadius:30}}
-          keyExtractor={(item, index) => 'key'+index}
+          keyExtractor={(item, index) => `${item} ${index}`}
           data={stop}
           renderItem={({ item,index }) => (
             <View style={styles.listContainer}>

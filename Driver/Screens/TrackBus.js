@@ -94,7 +94,7 @@ const openMaps=()=>{
      params: [
        {
          key: "travelmode",
-         value: "driving"        // may be "walking", "bicycling" or "transit" as well
+         value: "driving"        
        }
      ],
      waypoints: waypoints
